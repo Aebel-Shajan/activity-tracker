@@ -1,5 +1,6 @@
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 import _ from 'lodash';
+import { constructDurationString } from "@/lib/utils";
 
 // types
 export interface ChartDataType {
@@ -27,12 +28,6 @@ const COLORS = [
 ];
 
 // Util functions
-function constructDurationString(timeInSeconds: number): string {
-  const hours = Math.floor(timeInSeconds / 3600)
-  const minutes = Math.floor((timeInSeconds % 3600) / 60)
-  return `${hours}h ${minutes}m`
-}
-
 function constructAppName(rawName: string): string {
   const splitNameList = rawName.split('.').filter(word => word !== "com" && word !== "org").slice(1)
 
