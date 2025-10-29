@@ -68,7 +68,8 @@ def query_database():
 
 
 def transform_data(rows: list):
-    grouped = defaultdict(list)
+    # grouped = defaultdict(list)
+    all_data = []
 
     for r in rows:
         app, usage, start_time, end_time, created_at, tz, device_id, device_model = r
@@ -82,14 +83,15 @@ def transform_data(rows: list):
             "device_model": device_model or "Unknown",
             "usage": usage,
             "timezone": tz,
-            "created_at": created_at,
+            "created_at": datetime.fromtimestamp(created_at).isoformat(),
             "start_time": datetime.fromtimestamp(start_time).isoformat(),
             "end_time": end_dt.isoformat(),
         }
+        
+        all_data.append(record)
+        # grouped[day].append(record)
 
-        grouped[day].append(record)
-
-    return grouped  # dict: { 'YYYY-MM-DD': [records...] }
+    return all_data  # dict: { 'YYYY-MM-DD': [records...] }
 
 
 def upload_to_s3(grouped_data: defaultdict[str, list]):
@@ -97,13 +99,13 @@ def upload_to_s3(grouped_data: defaultdict[str, list]):
     bucket = "aebels-activity"
 
     for day, records in grouped_data.items():
-        filename = f"/tmp/screen_time_{day}.json"
+        filename = f"./data/screen_time_{day}.json"
         with open(filename, "w") as f:
             json.dump(records, f, indent=2)
 
-        s3.upload_file(filename, bucket, f"raw/macos-activity/{day}.json")
-        print(f"Uploaded data for {day} ({len(records)} records).")
-        break
+        # s3.upload_file(filename, bucket, f"raw/macos-activity/{day}.json")
+        # print(f"Uploaded data for {day} ({len(records)} records).")
+        # break
 
 
 # def write_to_influxdb(data):
@@ -126,10 +128,13 @@ def main():
     rows = query_database()
 
     # Transform the data, grouping by day
-    grouped_data = transform_data(rows)
+    all_data = transform_data(rows)
+    with open("./data/all_screen_time_data.json", "w") as f:
+        json.dump(all_data, f, indent=2)
+
 
     # Save to json and upload to s3
-    upload_to_s3(grouped_data)
+    # upload_to_s3(grouped_data)
 
 
 
