@@ -1,6 +1,6 @@
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 import _ from 'lodash';
-import { constructDurationString } from "@/lib/utils";
+import { constructAppName, constructDurationString, constructPercentageString } from "@/lib/utils";
 
 // types
 export interface ChartDataType {
@@ -28,16 +28,7 @@ const COLORS = [
 ];
 
 // Util functions
-function constructAppName(rawName: string): string {
-  const splitNameList = rawName.split('.').filter(word => word !== "com" && word !== "org").slice(1)
 
-  return splitNameList.join(" ")
-}
-
-function constructPercentageString(timeInSeconds: number, total: number): string {
-  const percentage = Math.floor(100 * timeInSeconds / total)
-  return `${percentage}%`
-}
 
 // Components
 export function UsageChart({ data }: { data: ChartDataType[] }) {
@@ -73,7 +64,7 @@ export function TopCategories({ data }: { data: ChartDataType[] }) {
       {data.map((row, index) => {
         return (
           <div key={row.app} className='flex justify-between'>
-            <span className='flex'>
+            <span className='flex  w-[50%]'>
               <div style={{
                 width: '20px',
                 height: '20px',
@@ -82,7 +73,7 @@ export function TopCategories({ data }: { data: ChartDataType[] }) {
                 lineHeight: '20px',
                 marginRight: '10px',
               }} />
-              <span>
+              <span className="truncate shrink-999">
                 {constructAppName(row.app)}
               </span>
             </span>
