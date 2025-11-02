@@ -2,6 +2,7 @@ import _ from "lodash";
 import { useEffect, useState } from "react";
 import { constructDurationString, getCSSVariable } from "@/lib/utils";
 import { DEFAULT_HEATMAP_SETTINGS } from "@/constants";
+import { useDataContext } from "./use-data-context";
 
 // Types
 export type HeatmapDataType = { [x: string]: number; }
@@ -96,6 +97,7 @@ function DayCircleCell(
     heatmapSettings?: HeatmapSettings
   }
 ) {
+  const {setSelectedDate} = useDataContext()
   const heatmapPos = getHeatmapPosition(
     date.getUTCDay(),
     date.getUTCMonth(),
@@ -122,6 +124,7 @@ function DayCircleCell(
         cx={heatmapPos.xPos}
         cy={heatmapPos.yPos}
         r={heatmapSettings.radius}
+        onClick={() => setSelectedDate(date)}
       />
 
       {/* Tooltip group */}
@@ -209,7 +212,7 @@ export function HeatmapVisual(
     heatmapSettings = DEFAULT_HEATMAP_SETTINGS,
   }: {
     data: Record<string, string | number>[],
-    heatmapSettings?: HeatmapSettings
+    heatmapSettings?: HeatmapSettings,
   }
 ) {
   const [heatmapData, setHeatmapData] = useState<HeatmapDataType>({})
