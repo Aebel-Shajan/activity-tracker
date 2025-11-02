@@ -121,7 +121,7 @@ export default function DailyActivity(
   return (
     <div className='flex items-center justify-center gap-5 flex-wrap w-full'>
 
-      <div className='flex w-70 items-center gap-4'>
+      <div className='flex items-center justify-between gap-4'>
         <button
           onClick={prevDay}
           className='h-fit w-fit border-2 rounded-xl p-2 cursor-pointer hover:bg-foreground hover:text-accent'>
