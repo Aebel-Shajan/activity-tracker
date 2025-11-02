@@ -68,14 +68,13 @@ def query_database():
 
 
 def transform_data(rows: list):
-    # grouped = defaultdict(list)
-    all_data = []
+    grouped_by_month = defaultdict(list)
 
     for r in rows:
         app, usage, start_time, end_time, created_at, tz, device_id, device_model = r
         # Convert to datetime
-        end_dt = datetime.fromtimestamp(end_time)
-        day = end_dt.date().isoformat()  # e.g. '2025-10-26'
+        created_at_time= datetime.fromtimestamp(created_at)
+        month = created_at_time.strftime("%Y-%m")  # e.g. '2025-10'
 
         record = {
             "app": app,
@@ -83,23 +82,22 @@ def transform_data(rows: list):
             "device_model": device_model or "Unknown",
             "usage": usage,
             "timezone": tz,
-            "created_at": datetime.fromtimestamp(created_at).isoformat(),
+            "created_at": created_at_time.isoformat(),
             "start_time": datetime.fromtimestamp(start_time).isoformat(),
-            "end_time": end_dt.isoformat(),
+            "end_time": datetime.fromtimestamp(end_time).isoformat(),
         }
         
-        all_data.append(record)
-        # grouped[day].append(record)
+        grouped_by_month[month].append(record)
 
-    return all_data  # dict: { 'YYYY-MM-DD': [records...] }
+    return grouped_by_month  # dict: { 'YYYY-MM-DD': [records...] }
 
 
 def upload_to_s3(grouped_data: defaultdict[str, list]):
     s3: S3Transfer = boto3.client("s3")
     bucket = "aebels-activity"
 
-    for day, records in grouped_data.items():
-        filename = f"./data/screen_time_{day}.json"
+    for month, records in grouped_data.items():
+        filename = f"./data/screen_time_{month}.json"
         with open(filename, "w") as f:
             json.dump(records, f, indent=2)
 
@@ -128,9 +126,18 @@ def main():
     rows = query_database()
 
     # Transform the data, grouping by day
-    all_data = transform_data(rows)
+    grouped_data = transform_data(rows)
+    all_data = [record for records in grouped_data.values() for record in records]
     with open("./data/all_screen_time_data.json", "w") as f:
         json.dump(all_data, f, indent=2)
+
+    # grouped_by_month = transform_data(rows)
+    # folder_path = "./data"
+    # os.makedirs(os.path.dirname(folder_path), exist_ok=True)
+    # for month, records in grouped_by_month.items():
+    #     filename = f"{folder_path}/screen_time_{month}.json"
+    #     with open(filename, "w") as f:
+    #         json.dump(records, f, indent=2)
 
 
     # Save to json and upload to s3
